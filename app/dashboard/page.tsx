@@ -5,46 +5,12 @@ import { Sparkles } from "lucide-react";
 import { useDashboard } from "../../lib/hooks/useDashboard";
 import { Sidebar } from "../../components/dashboard/Sidebar";
 import { Header } from "../../components/dashboard/Header";
-import { StatCard } from "../../components/dashboard/StatCard";
-import { ContinueLearning } from "../../components/dashboard/ContinueLearning";
-import { LearningStreak } from "../../components/dashboard/LearningStreak";
-import { UpcomingLessons } from "../../components/dashboard/UpcomingLessons";
-import { CourseGrid } from "../../components/dashboard/CourseGrid";
-import { StatMetric } from "../../lib/types/dashboard.types";
-
-const statMetrics: StatMetric[] = [
-  {
-    id: "s1",
-    title: "Active Courses",
-    value: 4,
-    badge: "📈 +2 this week",
-    iconName: "book",
-    colorScheme: "purple",
-  },
-  {
-    id: "s2",
-    title: "Total Learning Hours",
-    value: 128,
-    iconName: "clock",
-    colorScheme: "indigo",
-  },
-  {
-    id: "s3",
-    title: "Certificates Earned",
-    value: 7,
-    badge: "+ 1 new",
-    iconName: "award",
-    colorScheme: "amber",
-  },
-  {
-    id: "s4",
-    title: "Completion Rate",
-    value: "84%",
-    badge: "📈 +5%",
-    iconName: "rotate",
-    colorScheme: "emerald",
-  },
-];
+import { DashboardView } from "../../components/dashboard/views/DashboardView";
+import { MyCoursesView } from "../../components/dashboard/views/MyCoursesView";
+import { CertificatesView } from "../../components/dashboard/views/CertificatesView";
+import { CommunityView } from "../../components/dashboard/views/CommunityView";
+import { CalendarView } from "../../components/dashboard/views/CalendarView";
+import { SettingsView } from "../../components/dashboard/views/SettingsView";
 
 export default function UserDashboard() {
   const {
@@ -80,42 +46,14 @@ export default function UserDashboard() {
           onLogout={handleLogout}
         />
 
-        {/* Dashboard Main Grid */}
-        <main className="p-4 sm:p-8 space-y-8 max-w-7xl mx-auto w-full">
-          {/* Welcome Header */}
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Welcome back, {userName}
-            </h1>
-            <p className="text-slate-500 text-sm">Let&apos;s pick up where you left off.</p>
-          </div>
-
-          {/* Stat Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {statMetrics.map((stat) => (
-              <StatCard key={stat.id} {...stat} />
-            ))}
-          </div>
-
-          {/* Middle Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-8">
-              <ContinueLearning />
-            </div>
-            <div className="lg:col-span-4">
-              <LearningStreak />
-            </div>
-          </div>
-
-          {/* Bottom Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-5">
-              <UpcomingLessons />
-            </div>
-            <div className="lg:col-span-7">
-              <CourseGrid />
-            </div>
-          </div>
+        {/* Dynamic View Container */}
+        <main className="p-4 sm:p-8 max-w-7xl mx-auto w-full">
+          {activeTab === "dashboard" && <DashboardView userName={userName} />}
+          {activeTab === "courses" && <MyCoursesView />}
+          {activeTab === "certificates" && <CertificatesView />}
+          {activeTab === "community" && <CommunityView />}
+          {activeTab === "calendar" && <CalendarView />}
+          {activeTab === "settings" && <SettingsView userName={userName} />}
         </main>
       </div>
 
