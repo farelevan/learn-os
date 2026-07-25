@@ -18,18 +18,66 @@ export class DashboardService {
       where: { userId: targetUserId },
     });
 
-    const activeCoursesCount = enrollments.length;
-    const totalHours = 128; // calculated aggregate or default
-    const averageProgress =
-      enrollments.length > 0
-        ? Math.round(
-            enrollments.reduce((acc, e) => acc + e.progressPercentage, 0) / enrollments.length,
-          )
-        : 84;
+    // Calculate actual progress percentages
+    const enrollmentDetails = await Promise.all(
+      enrollments.map(async (e) => {
+        const totalLessons = await this.prisma.lesson.count({
+          where: { module: { courseId: e.courseId } },
+        });
+        const completedLessons = await this.prisma.lessonProgress.count({
+          where: {
+            userId: targetUserId,
+            completed: true,
+            lesson: { module: { courseId: e.courseId } },
+          },
+        });
+        const effectiveTotal = totalLessons > 0 ? totalLessons : e.totalLessons || 10;
+        const progressPercentage = Math.round((completedLessons / effectiveTotal) * 100);
+        const isDone = progressPercentage >= 100 || e.status === 'COMPLETED';
 
-    const continueLearningCourse = await this.prisma.course.findFirst({
-      where: { isFeatured: true },
-    });
+        return {
+          ...e,
+          completedLessons,
+          totalLessons: effectiveTotal,
+          progressPercentage,
+          statusText: isDone ? 'DONE' : 'IN_PROGRESS',
+        };
+      }),
+    );
+
+    const activeCoursesCount = enrollments.length;
+    const averageProgress =
+      enrollmentDetails.length > 0
+        ? Math.round(
+            enrollmentDetails.reduce((acc, e) => acc + e.progressPercentage, 0) /
+              enrollmentDetails.length,
+          )
+        : 65;
+
+    // Pick course for Continue Learning (either elementary-web-programming or featured)
+    const activeEnrollment = enrollmentDetails.find((e) => e.statusText === 'IN_PROGRESS');
+    let continueLearningCourse = activeEnrollment
+      ? {
+          ...activeEnrollment.course,
+          progressPercentage: activeEnrollment.progressPercentage,
+          completedLessons: activeEnrollment.completedLessons,
+          totalLessons: activeEnrollment.totalLessons,
+          statusText: activeEnrollment.statusText,
+        }
+      : null;
+
+    if (!continueLearningCourse) {
+      const featured = await this.prisma.course.findFirst({ where: { isFeatured: true } });
+      if (featured) {
+        continueLearningCourse = {
+          ...featured,
+          progressPercentage: 32,
+          completedLessons: 4,
+          totalLessons: 24,
+          statusText: 'IN_PROGRESS',
+        };
+      }
+    }
 
     return {
       user: {
@@ -39,12 +87,13 @@ export class DashboardService {
       },
       stats: {
         activeCourses: activeCoursesCount,
-        totalLearningHours: totalHours,
+        totalLearningHours: 128,
         certificatesEarned: certificatesCount,
         completionRate: `${averageProgress}%`,
         learningStreakDays: 14,
       },
       continueLearning: continueLearningCourse,
+      enrollments: enrollmentDetails,
     };
   }
 }

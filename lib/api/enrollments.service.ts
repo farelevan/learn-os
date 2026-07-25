@@ -10,6 +10,8 @@ export interface EnrollmentData {
   totalLessons: number;
   isBookmarked: boolean;
   status: string;
+  statusText?: "DONE" | "IN_PROGRESS";
+  isDone?: boolean;
   course: CourseData;
 }
 

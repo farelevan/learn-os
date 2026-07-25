@@ -6,16 +6,49 @@ export class EnrollmentsService {
   constructor(private prisma: PrismaService) {}
 
   async getUserEnrollments(userId?: string) {
-    // Fallback to first student if userId not passed
     const targetUserId = userId || (await this.getStudentId());
 
-    return this.prisma.enrollment.findMany({
+    const enrollments = await this.prisma.enrollment.findMany({
       where: { userId: targetUserId },
       include: {
         course: true,
       },
       orderBy: { updatedAt: 'desc' },
     });
+
+    // Re-calculate real-time progress for each enrollment from LessonProgress table
+    return Promise.all(
+      enrollments.map(async (e) => {
+        const totalLessons = await this.prisma.lesson.count({
+          where: { module: { courseId: e.courseId } },
+        });
+
+        const completedLessons = await this.prisma.lessonProgress.count({
+          where: {
+            userId: targetUserId,
+            completed: true,
+            lesson: { module: { courseId: e.courseId } },
+          },
+        });
+
+        const effectiveTotal = totalLessons > 0 ? totalLessons : e.totalLessons || 10;
+        const effectiveCompleted = Math.min(completedLessons, effectiveTotal);
+        const progressPercentage = Math.round((effectiveCompleted / effectiveTotal) * 100);
+
+        const isDone = progressPercentage >= 100 || e.status === 'COMPLETED';
+        const statusText = isDone ? 'DONE' : 'IN_PROGRESS';
+
+        return {
+          ...e,
+          completedLessons: effectiveCompleted,
+          totalLessons: effectiveTotal,
+          progressPercentage,
+          status: isDone ? 'COMPLETED' : 'IN_PROGRESS',
+          statusText,
+          isDone,
+        };
+      }),
+    );
   }
 
   async enroll(courseId: string, userId?: string) {
@@ -33,11 +66,18 @@ export class EnrollmentsService {
       where: { id: courseId },
     });
 
+    const totalLessons = await this.prisma.lesson.count({
+      where: { module: { courseId } },
+    });
+
     return this.prisma.enrollment.create({
       data: {
         userId: targetUserId,
         courseId,
-        totalLessons: course?.totalLessons || 10,
+        totalLessons: totalLessons > 0 ? totalLessons : course?.totalLessons || 10,
+        completedLessons: 0,
+        progressPercentage: 0,
+        status: 'IN_PROGRESS',
       },
       include: { course: true },
     });

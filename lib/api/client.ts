@@ -35,6 +35,12 @@ export async function apiClient<T>(
   if (!response.ok) {
     const errorMessage =
       data.message || `HTTP Request error with status ${response.status}`;
+
+    // Handle 403 Forbidden client-side redirect if running in browser
+    if (response.status === 403 && typeof window !== "undefined" && !window.location.pathname.startsWith("/403")) {
+      window.location.href = "/403";
+    }
+
     throw new ApiError(errorMessage, response.status);
   }
 

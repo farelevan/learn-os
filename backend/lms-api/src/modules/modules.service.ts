@@ -6,6 +6,8 @@ export class ModulesService {
   constructor(private prisma: PrismaService) {}
 
   async findByCourseId(courseId: string, userId?: string) {
+    const student = await this.resolveUserId(userId);
+
     const modules = await this.prisma.module.findMany({
       where: { courseId },
       orderBy: { orderIndex: 'asc' },
@@ -14,14 +16,14 @@ export class ModulesService {
           orderBy: { orderIndex: 'asc' },
           include: {
             quizzes: { where: { quizType: 'IN_LESSON' } },
-            lessonProgresses: userId ? { where: { userId } } : false,
+            lessonProgresses: student ? { where: { userId: student } } : false,
           },
         },
         quizzes: { where: { quizType: 'MODULE' } },
       },
     });
 
-    // Enrich with completion status for the user
+    // Enrich with completion status & explicit DONE status
     return modules.map((mod) => {
       const lessons = mod.lessons.map((lesson) => {
         const progress = (lesson as any).lessonProgresses;
@@ -29,6 +31,7 @@ export class ModulesService {
           progress && Array.isArray(progress) && progress.length > 0
             ? progress[0].completed
             : false;
+
         return {
           id: lesson.id,
           moduleId: lesson.moduleId,
@@ -38,11 +41,16 @@ export class ModulesService {
           duration: lesson.duration,
           orderIndex: lesson.orderIndex,
           completed,
+          status: completed ? 'DONE' : 'IN_PROGRESS',
           hasQuiz: lesson.quizzes.length > 0,
         };
       });
 
       const completedLessons = lessons.filter((l) => l.completed).length;
+      const totalLessons = lessons.length;
+      const progressPercentage =
+        totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+      const isCompleted = completedLessons === totalLessons && totalLessons > 0;
 
       return {
         id: mod.id,
@@ -52,10 +60,18 @@ export class ModulesService {
         orderIndex: mod.orderIndex,
         lessons,
         moduleQuiz: mod.quizzes.length > 0 ? mod.quizzes[0] : null,
-        totalLessons: lessons.length,
+        totalLessons,
         completedLessons,
-        isCompleted: completedLessons === lessons.length && lessons.length > 0,
+        progressPercentage,
+        isCompleted,
+        status: isCompleted ? 'DONE' : 'IN_PROGRESS',
       };
     });
+  }
+
+  private async resolveUserId(userId?: string): Promise<string> {
+    if (userId) return userId;
+    const user = await this.prisma.user.findFirst({ where: { role: 'STUDENT' } });
+    return user?.id || '';
   }
 }

@@ -12,6 +12,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { ModulesModule } from './modules/modules.module';
 import { LessonsModule } from './lessons/lessons.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
+import { ErrorsModule } from './errors/errors.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { QuizzesModule } from './quizzes/quizzes.module';
     ModulesModule,
     LessonsModule,
     QuizzesModule,
+    ErrorsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
