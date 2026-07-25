@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Search,
@@ -21,6 +22,7 @@ import {
 } from "lucide-react";
 
 export function CatalogView() {
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -35,7 +37,23 @@ export function CatalogView() {
 
   const exploreCourses = [
     {
+      id: "exp-0",
+      slug: "elementary-web-programming",
+      category: "WEB DEVELOPMENT",
+      title: "Elementary Web Programming",
+      description:
+        "Belajar dasar-dasar pemrograman web dari nol. HTML, CSS, dan JavaScript untuk pemula.",
+      instructor: "Traversy Media",
+      rating: 4.8,
+      reviewsCount: "5.2k",
+      duration: "6 hours",
+      price: "Free",
+      badge: "🆓 Free",
+      coverImage: "/course-webdev.png",
+    },
+    {
       id: "exp-1",
+      slug: "advanced-react-patterns",
       category: "SOFTWARE ENGINEERING",
       title: "Advanced React Patterns & Architecture",
       description:
@@ -50,6 +68,7 @@ export function CatalogView() {
     },
     {
       id: "exp-2",
+      slug: "ui-ux-principles-enterprise",
       category: "DESIGN",
       title: "UX Research for Enterprise SaaS",
       description:
@@ -64,6 +83,7 @@ export function CatalogView() {
     },
     {
       id: "exp-3",
+      slug: "intro-aws-serverless",
       category: "CLOUD COMPUTING",
       title: "Introduction to AWS Serverless",
       description:
@@ -232,7 +252,10 @@ export function CatalogView() {
               <div>
                 <span className="text-2xl font-black text-slate-900">$299</span>
               </div>
-              <button className="px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition-all">
+              <button
+                onClick={() => router.push('/course/mastering-generative-ai-for-enterprise')}
+                className="px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition-all"
+              >
                 Enroll Now
               </button>
             </div>
@@ -256,7 +279,8 @@ export function CatalogView() {
           {exploreCourses.map((course) => (
             <div
               key={course.id}
-              className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col justify-between group hover:shadow-lg transition-all"
+              onClick={() => router.push(`/course/${course.slug}`)}
+              className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col justify-between group hover:shadow-lg transition-all cursor-pointer"
             >
               {/* Image Header */}
               <div className="relative h-44 w-full overflow-hidden bg-slate-100">

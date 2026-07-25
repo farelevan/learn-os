@@ -9,6 +9,9 @@ import { CertificatesModule } from './certificates/certificates.module';
 import { CommunityModule } from './community/community.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ModulesModule } from './modules/modules.module';
+import { LessonsModule } from './lessons/lessons.module';
+import { QuizzesModule } from './quizzes/quizzes.module';
 
 @Module({
   imports: [
@@ -20,6 +23,9 @@ import { DashboardModule } from './dashboard/dashboard.module';
     CommunityModule,
     CalendarModule,
     DashboardModule,
+    ModulesModule,
+    LessonsModule,
+    QuizzesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
