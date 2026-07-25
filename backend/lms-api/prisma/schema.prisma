@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -14,6 +13,28 @@ enum Role {
   STUDENT
 }
 
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum EnrollmentStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum CertType {
+  PROFESSIONAL
+  COURSE
+}
+
+enum EventType {
+  LIVE_SESSION
+  DEADLINE
+  GOAL
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -23,6 +44,107 @@ model User {
   avatar    String?
   role      Role     @default(STUDENT)
 
+  enrollments  Enrollment[]
+  certificates Certificate[]
+  posts        CommunityPost[]
+  events       CalendarEvent[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  icon      String
+  courses   Course[]
+}
+
+model Course {
+  id              String      @id @default(cuid())
+  title           String
+  slug            String      @unique
+  description     String
+  categoryId      String?
+  category        Category?   @relation(fields: [categoryId], references: [id])
+  categoryName    String
+  instructorName  String
+  instructorRole  String?
+  price           Float       @default(0)
+  level           CourseLevel @default(INTERMEDIATE)
+  duration        String
+  totalLessons    Int         @default(10)
+  isFeatured      Boolean     @default(false)
+  isTrending      Boolean     @default(false)
+  badge           String?
+  coverImage      String
+  rating          Float       @default(5.0)
+  reviewsCount    String      @default("0")
+  studentsCount   Int         @default(0)
+
+  enrollments     Enrollment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Enrollment {
+  id                 String           @id @default(cuid())
+  userId             String
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId           String
+  course             Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progressPercentage Int              @default(0)
+  completedLessons   Int              @default(0)
+  totalLessons       Int              @default(10)
+  isBookmarked       Boolean          @default(false)
+  status             EnrollmentStatus @default(IN_PROGRESS)
+
+  enrolledAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Certificate {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  subTitle   String?
+  type       CertType @default(COURSE)
+  certNumber String   @unique
+  issuedDate String
+  pdfUrl     String?
+
+  createdAt DateTime @default(now())
+}
+
+model CommunityPost {
+  id            String   @id @default(cuid())
+  authorId      String
+  author        User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorName    String
+  authorRole    String   @default("Student")
+  channel       String   @default("#General")
+  title         String
+  content       String
+  likesCount    Int      @default(0)
+  commentsCount Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CalendarEvent {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  dateBadge   String
+  dayNumber   String
+  timeRange   String
+  eventType   EventType @default(LIVE_SESSION)
+  eventDate   DateTime  @default(now())
+
+  createdAt DateTime @default(now())
 }

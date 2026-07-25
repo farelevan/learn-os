@@ -6,6 +6,7 @@ import { useDashboard } from "../../lib/hooks/useDashboard";
 import { Sidebar } from "../../components/dashboard/Sidebar";
 import { Header } from "../../components/dashboard/Header";
 import { DashboardView } from "../../components/dashboard/views/DashboardView";
+import { CatalogView } from "../../components/dashboard/views/CatalogView";
 import { MyCoursesView } from "../../components/dashboard/views/MyCoursesView";
 import { CertificatesView } from "../../components/dashboard/views/CertificatesView";
 import { CommunityView } from "../../components/dashboard/views/CommunityView";
@@ -49,6 +50,7 @@ export default function UserDashboard() {
         {/* Dynamic View Container */}
         <main className="p-4 sm:p-8 max-w-7xl mx-auto w-full">
           {activeTab === "dashboard" && <DashboardView userName={userName} />}
+          {activeTab === "catalog" && <CatalogView />}
           {activeTab === "courses" && <MyCoursesView />}
           {activeTab === "certificates" && <CertificatesView />}
           {activeTab === "community" && <CommunityView />}

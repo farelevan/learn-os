@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { GraduationCap, LayoutDashboard, BookOpen, Award, Users, Calendar, Settings, Zap, LogOut, X } from "lucide-react";
+import { GraduationCap, LayoutDashboard, Grid, BookOpen, Award, Users, Calendar, Settings, Zap, LogOut, X } from "lucide-react";
 
 interface SidebarProps {
   activeTab: string;
@@ -15,7 +15,8 @@ interface SidebarProps {
 export function Sidebar({ activeTab, setActiveTab, mobileOpen, setMobileOpen, handleLogout }: SidebarProps) {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "courses", label: "My Courses", icon: BookOpen },
+    { id: "catalog", label: "Catalog", icon: Grid },
+    { id: "courses", label: "My Learning", icon: BookOpen },
     { id: "certificates", label: "Certificates", icon: Award },
     { id: "community", label: "Community", icon: Users },
     { id: "calendar", label: "Calendar", icon: Calendar },
